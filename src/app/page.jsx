@@ -1,10 +1,7 @@
+"use Client";
 import React, { useState, useClientEffect } from 'react';
 import { GroqClient } from '@groq/client';
 
-function MyComponent() {
-  const [data, setData] = useState(null);
-
-  useClientEffect(() => {
 const groqClient = new GroqClient(process.env.GROQ_API_KEY);
 
 function MainComponent() {
@@ -251,13 +248,3 @@ function MainComponent() {
 }
 
 export default MainComponent;
-  
-    console.log('This will only run on the client-side');
-  }, [data]);
-
-  return (
-    <div>
-      {data && <div>Data: {data}</div>}
-    </div>
-  );
-}  
