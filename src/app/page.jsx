@@ -1,16 +1,18 @@
-"use client";
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import { GroqClient } from '@groq/client';
+
+const groqClient = new GroqClient(process.env.GROQ_API_KEY);
 
 function MainComponent() {
-  const [subject, setSubject] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isCanvasEnabled, setIsCanvasEnabled] = React.useState(false);
-  const [evaluationResult, setEvaluationResult] = React.useState(null);
-  const [brushSize, setBrushSize] = React.useState(5);
-  const [isDrawing, setIsDrawing] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [age, setAge] = React.useState("");
-  const canvasRef = React.useRef(null);
+  const [subject, setSubject] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCanvasEnabled, setIsCanvasEnabled] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState(null);
+  const [brushSize, setBrushSize] = useState(5);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const canvasRef = React.createRef();
 
   const playAudioFromText = async (text) => {
     const encodedText = encodeURIComponent(text);
@@ -19,7 +21,7 @@ function MainComponent() {
     audio.play();
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
@@ -38,34 +40,13 @@ function MainComponent() {
 
   const getSubject = async () => {
     setIsLoading(true);
-    const randomPage = Math.floor(Math.random() * 1000) + 1;
-    const randomWord = Math.floor(Math.random() * 30) + 1;
-    const prompt = `Illustrate the prompt with a maximum of 3 words.\n\n### Vietnamese dictionary ${randomPage} page, ${randomWord} word.\nLimit to simple and physically describable objects.\n## Output format\nVietnamese prompt / English prompt;`;
-    const response = await fetch(
-      "https://www.create.xyz/integrations/anthropic-claude-sonnet/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        }),
-      }
-    );
-    const data = await response.json();
-    const subjectParts = data.choices[0].message.content.split(" / ");
-    const newSubject =
-      subjectParts.length === 2 ? data.choices[0].message.content : "";
-    setSubject(newSubject);
+    const query = `query { dictionary { randomWord } }`;
+    const response = await groqClient.query(query);
+    const randomWord = response.data.dictionary.randomWord;
+    setSubject(randomWord);
     setIsLoading(false);
     setIsCanvasEnabled(true);
-    playAudioFromText(newSubject);
+    playAudioFromText(randomWord);
   };
 
   const requestReview = async () => {
@@ -76,40 +57,9 @@ function MainComponent() {
       parseInt(age) < 6
         ? "Easy criteria for children under 6 years old.\n"
         : "";
-    const response = await fetch(
-      "https://www.create.xyz/integrations/gpt-vision/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/png;base64,${dataURL}`,
-                  },
-                },
-                {
-                  type: "text",
-                  text:
-                    textContent +
-                    `Đối với chủ đề「${
-                      subject.split(" / ")[0]
-                    }」, xem hình đã đúng chủ đề không?\nĐịnh dạng đánh giá:\nĐiểm số x / 100\nĐánh giá bằng tiếng Việt\nĐánh giá bằng tiếng Anh,`,
-                },
-              ],
-            },
-          ],
-        }),
-      }
-    );
-    const data = await response.json();
-    const result = data.choices[0].message.content;
+    const query = `query { gptVision { evaluate(image: "${dataURL}") } }`;
+    const response = await groqClient.query(query);
+    const result = response.data.gptVision.evaluate;
     setEvaluationResult(result);
     setIsLoading(false);
     playAudioFromText(result);
@@ -216,8 +166,7 @@ function MainComponent() {
           <>
             {subject ? (
               <p className="text-xl mb-4 text-[#16a085]">
-                Chủ đề: {subject.split(" / ")[0]} / Subject:{" "}
-                {subject.split(" / ")[1]}
+                Chủ đề: {subject.split(" / ")[0]} / Subject: {subject.split(" / ")[1]}
               </p>
             ) : (
               <button
@@ -272,7 +221,7 @@ function MainComponent() {
                   <button
                     className={
                       "bg-[#3498db] hover:bg-[#2980b9] text-white px-4 py-2 rounded-full " +
-                      (isLoading ? "hidden" : "")
+                      (isLoading ? "opacity-50 cursor-not-allowed" : "")
                     }
                     onClick={requestReview}
                   >
