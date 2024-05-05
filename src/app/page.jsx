@@ -35,31 +35,24 @@ function MainComponent() {
   }, []);
 
   const getSubject = async () => {
+  const fetch = require('cross-fetch');
   setIsLoading(true);
   const randomPage = Math.floor(Math.random() * 1000) + 1;
   const randomWord = Math.floor(Math.random() * 30) + 1;
   const prompt = `Illustrate the prompt with a maximum of 3 words.\n\n### Vietnamese dictionary ${randomPage} page, ${randomWord} word.\nLimit to simple and physically describable objects.\n## Output format\nVietnamese prompt / English prompt;`;
-  const proxyUrl = 'https://allorigins.win/new/';
-  const targetUrl = 'https://www.create.xyz/integrations/anthropic-claude-sonnet/';
-  const response = await fetch(proxyUrl, {
+  const url = 'https://www.create.xyz/integrations/anthropic-claude-sonnet/';
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      url: targetUrl,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      }),
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
     }),
   });
   const data = await response.json();
