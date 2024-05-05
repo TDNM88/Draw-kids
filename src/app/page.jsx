@@ -35,38 +35,37 @@ function MainComponent() {
   }, []);
 
   const getSubject = async () => {
-    setIsLoading(true);
-    const randomPage = Math.floor(Math.random() * 1000) + 1;
-    const randomWord = Math.floor(Math.random() * 30) + 1;
-    const prompt = `Illustrate the prompt with a maximum of 3 words.\n\n### Vietnamese dictionary ${randomPage} page, ${randomWord} word.\nLimit to simple and physically describable objects.\n## Output format\nVietnamese prompt / English prompt;`;
-    const response = await fetch(
-      "https://www.create.xyz/integrations/anthropic-claude-sonnet/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+  setIsLoading(true);
+  const randomPage = Math.floor(Math.random() * 1000) + 1;
+  const randomWord = Math.floor(Math.random() * 30) + 1;
+  const prompt = `Illustrate the prompt with a maximum of 3 words.\n\n### Vietnamese dictionary ${randomPage} page, ${randomWord} word.\nLimit to simple and physically describable objects.\n## Output format\nVietnamese prompt / English prompt;`;
+  const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  const targetUrl = 'https://www.create.xyz/integrations/anthropic-claude-sonnet/';
+  const response = await fetch(proxyUrl + targetUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: [
+        {
+          role: "user",
+          content: prompt,
         },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        }),
-      }
-    );
-    const data = await response.json();
-    const subjectParts = data.choices[0].message.content.split(" / ");
-    const newSubject =
-      subjectParts.length === 2 ? data.choices[0].message.content : "";
-    setSubject(newSubject);
-    setIsLoading(false);
-    setIsCanvasEnabled(true);
-    if (newSubject) {
-      playAudioFromText(newSubject.split(" / ")[1], "en");
-    }
-  };
+      ],
+    }),
+  });
+  const data = await response.json();
+  const subjectParts = data.choices[0].message.content.split(" / ");
+  const newSubject =
+    subjectParts.length === 2 ? data.choices[0].message.content : "";
+  setSubject(newSubject);
+  setIsLoading(false);
+  setIsCanvasEnabled(true);
+  if (newSubject) {
+    playAudioFromText(newSubject.split(" / ")[1], "en");
+  }
+};
 
   const requestReview = async () => {
     setIsLoading(true);
