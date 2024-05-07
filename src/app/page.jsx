@@ -35,12 +35,11 @@ function MainComponent() {
   }, []);
 
   const getSubject = async () => {
-  const fetch = require('cross-fetch');
   setIsLoading(true);
   const randomPage = Math.floor(Math.random() * 1000) + 1;
   const randomWord = Math.floor(Math.random() * 30) + 1;
   const prompt = `Illustrate the prompt with a maximum of 3 words.\n\n### Vietnamese dictionary ${randomPage} page, ${randomWord} word.\nLimit to simple and physically describable objects.\n## Output format\nVietnamese prompt / English prompt;`;
-  const url = 'https://www.create.xyz/integrations/anthropic-claude-sonnet/';
+  const url = '/api/proxy'; // Use the serverless function URL
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -66,7 +65,6 @@ function MainComponent() {
     playAudioFromText(newSubject.split(" / ")[1], "en");
   }
 };
-
   const requestReview = async () => {
     setIsLoading(true);
     const canvas = canvasRef.current;
