@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "start": "node index.js",
+  "build": "webpack --output-path=build",
+  "lint": "next lint"
+},
   },
   "dependencies": {
     "react": "^18",
